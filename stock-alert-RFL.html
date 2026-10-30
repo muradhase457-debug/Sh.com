@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>স্টক অ্যালার্ট — RFL স্টোর</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f5f6f8;--fg:#1c2230;--mut:#667085;--card:#fff;--bd:#dfe3ea;--acc:#1d4ed8;--out:#b91c1c;--crit:#ea580c;--warn:#ca8a04;--ok:#15803d;--nod:#64748b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141c;--fg:#e6e9ef;--mut:#98a2b3;--card:#171e29;--bd:#2a3342;--acc:#6b9bff;--out:#f87171;--crit:#fb923c;--warn:#facc15;--ok:#4ade80;--nod:#94a3b8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f141c;--fg:#e6e9ef;--mut:#98a2b3;--card:#171e29;--bd:#2a3342;--acc:#6b9bff;--out:#f87171;--crit:#fb923c;--warn:#facc15;--ok:#4ade80;--nod:#94a3b8;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 "Noto Sans Bengali","Hind Siliguri",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1200px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 2px}.sub{color:var(--mut);margin:0 0 14px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:3px}
+label.chk{flex-direction:row;align-items:center;gap:6px;color:var(--fg);font-size:13px;padding-bottom:8px}
+label.chk input{width:auto}
+input,select,button{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:7px 9px}
+input[type=number]{width:84px}
+button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+#drop,#dropR{border:2px dashed var(--bd);border-radius:12px;padding:18px;text-align:center;cursor:pointer;flex:1;min-width:220px}
+#drop.on,#dropR.on{border-color:var(--acc)}
+#drop b,#dropR b{display:block;font-size:16px}
+#msg{margin:8px 0 0;font-size:13px;color:var(--ok);min-height:18px}#msg.e{color:var(--out)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{border:1px solid var(--bd);border-left-width:6px;border-radius:10px;padding:10px 12px;background:var(--card);cursor:pointer;text-align:left}
+.kpi.sel{outline:2px solid var(--acc)}
+.kpi span{display:block;font-size:12px;color:var(--mut)}.kpi strong{font-size:24px}
+.k-out{border-left-color:var(--out)}.k-crit{border-left-color:var(--crit)}.k-warn{border-left-color:var(--warn)}.k-ok{border-left-color:var(--ok)}.k-nod{border-left-color:var(--nod)}.k-all{border-left-color:var(--acc)}.k-short{border-left-color:var(--crit)}
+.wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:1900px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--bd);text-align:left;font-size:14px;vertical-align:middle}
+th{font-size:12px;color:var(--mut);white-space:nowrap}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+td.us,td.lv{white-space:nowrap}
+td input{width:70px;padding:4px 6px}
+.b{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;color:#fff;white-space:nowrap}
+.b.out{background:var(--out)}.b.crit{background:var(--crit)}.b.warn{background:var(--warn);color:#1c1c1c}.b.ok{background:var(--ok)}.b.nod{background:var(--nod)}.b.non{background:#94a3b8;color:#1c1c1c}
+.u{color:var(--mut);font-size:12px}
+.ord{font-weight:700}
+.tag{display:block;font-size:11px;color:var(--crit)}
+td.fl{min-width:320px;white-space:normal}
+.chip{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:1px 7px;margin:2px 4px 2px 0;font-size:12px;white-space:nowrap}
+.chip b{font-variant-numeric:tabular-nums}
+.chip.on{border-color:var(--acc);font-weight:600}
+details summary{cursor:pointer;color:var(--acc);font-size:14px}
+.help{font-size:13px;color:var(--mut)}.help li{margin:3px 0}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.bar input[type=search]{flex:1;min-width:160px}.bar select{max-width:280px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>📦 স্টক অ্যালার্ট — RFL স্টোর</h1>
+<p class="sub">Oracle থেকে On Hand Quantity এক্সেল আপলোড করুন — কোন মাল শেষ বা শেষ হওয়ার পথে, কত দিন চলবে, কত অর্ডার করবেন — সব এক জায়গায়।</p>
+
+<section class="card">
+  <div class="row">
+    <div id="drop"><b>📂 ১) স্টক রিপোর্ট (On Hand Quantity)</b><span class="u">.xls / .xlsx / .csv — ফেলুন বা ক্লিক করুন</span><input id="file" type="file" accept=".xls,.xlsx,.csv" class="hide"></div>
+    <div id="dropR"><b>📋 ২) রিকুইজিশন সামারি (IR / Order)</b><span class="u">Qty Delivered + Need-By + Location — ফেলুন বা ক্লিক করুন</span><input id="fileR" type="file" accept=".xls,.xlsx,.csv" class="hide"></div>
+    <label>রিপোর্টের তারিখ<input id="dt" type="date"></label>
+    <label>সাপ্লাইয়ার লিড টাইম (দিন)<input id="c-lead" type="number" min="1"></label>
+    <label>সেফটি (দিন)<input id="c-safety" type="number" min="0"></label>
+    <label>অর্ডারে কত দিনের মাল (দিন)<input id="c-cover" type="number" min="1"></label>
+    <label>ব্যবহার হিসাবের সময় (দিন)<input id="c-win" type="number" min="2"></label>
+    <label>ব্যবহারের তথ্য না থাকলে লেভেল (সর্বোচ্চ স্টকের %)<input id="c-pct" type="number" min="1" max="100"></label>
+    <label>নন-মুভিং: এত দিন ইস্যু না হলে (দিন)<input id="c-non" type="number" min="1"></label>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <label class="chk"><input id="c-miss" type="checkbox"> স্টক রিপোর্টে নেই কিন্তু ডেলিভারি/রিকুইজিশন আছে — এমন আইটেমও দেখান (স্টক ০ ধরে)</label>
+    <label class="chk"><input id="c-pend" type="checkbox"> সামারির বাকি (Quantity − Qty Delivered) ডিমান্ড হিসেবে ধরুন (নিজে ডিমান্ড দিলে সেটাই চলবে)</label>
+  </div>
+  <p id="msg"></p>
+  <details id="mapbox" class="hide"><summary>কলাম মিলিয়ে নিন (ভুল ধরলে ঠিক করুন)</summary>
+    <div class="row" id="maps" style="margin-top:8px"></div></details><details id="mapboxR" class="hide"><summary>রিকুইজিশন সামারির কলাম মিলিয়ে নিন</summary><div class="row" id="mapsR" style="margin-top:8px"></div><p id="prev" class="help"></p>
+  </details>
+</section>
+
+<section id="empty" class="card help">
+  <b>কীভাবে কাজ করে</b>
+  <ol>
+    <li>Oracle থেকে On Hand Quantity এক্সেল নামিয়ে বক্স ১-এ দিন। রিপোর্টের তারিখ (Balance up to) নিজে থেকেই ধরে নেবে।</li>
+    <li>রিকুইজিশন সামারি (Order Number, Number, Item, Description, UOM, Quantity, Qty Delivered, Requester, Need-By, Location) বক্স ২-এ দিন। একই ফাইল আবার দিলে ডুপ্লিকেট হবে না।</li>
+    <li><b>দৈনিক ব্যবহার</b> = গত “ব্যবহার হিসাবের সময়”-এর মোট <b>Qty Delivered</b> ÷ দিন সংখ্যা। <b>কত দিন চলবে</b> = স্টক ÷ দৈনিক ব্যবহার। লিড টাইমের কাছাকাছি এলে লাল/কমলা সতর্কতা দেখাবে।</li>
+    <li><b>ফ্লোর অনুযায়ী ব্যবহার</b> = সামারির Location (যেমন PD7-115-PF-561) ধরে কোন লোকেশনে কত Qty Delivered হয়েছে। ওপরের “সব ফ্লোর / লোকেশন” থেকে একটা বেছে শুধু সেই লোকেশনের আইটেম দেখা যায়।</li>
+    <li><b>বাকি ডিমান্ড</b> = সামারির Quantity − Qty Delivered। আপনার নিজের ডিমান্ড থাকলে টেবিলের “ডিমান্ড (নিজে দিন)” ঘরে লিখুন — তখন সেটাই স্ট্যাটাস আর অর্ডারের হিসাবে ধরা হবে।</li>
+    <li><b>শর্ট লেভেল (অটো)</b> = দৈনিক ব্যবহার × (লিড টাইম + সেফটি দিন)। ব্যবহারের তথ্য না থাকলে সর্বোচ্চ স্টকের ৩০% “আনুমানিক” ধরে। নিজে ঠিক করতে চাইলে “নিজের লেভেল” ঘরে লিখুন।</li>
+    <li><b>নন-মুভিং আইটেম:</b> ওপরের ঘরের দিন ধরে যে মাল ইস্যু হয়নি, সেটা “নন-মুভিং” — শর্ট লিস্টে আসবে না।</li>
+  </ol>
+</section>
+
+<section id="app" class="hide">
+  <div class="grid" id="cards"></div>
+  <div class="bar">
+    <input id="q" type="search" placeholder="কোড, আইটেমের নাম বা ফ্লোর খুঁজুন…">
+    <select id="fsel"><option value="">সব ফ্লোর / লোকেশন</option></select>
+    <button class="p" id="exp">⬇ এক্সেলে সেভ করুন</button>
+    <button id="reset">সব ডেটা মুছুন</button>
+  </div>
+  <div class="wrap"><table>
+    <thead><tr><th>অবস্থা</th><th>কোড</th><th>আইটেম</th><th>স্টক</th><th>দৈনিক ব্যবহার</th><th>কত দিন চলবে</th><th>বাকি ডিমান্ড</th><th>ফ্লোর / লোকেশন অনুযায়ী ব্যবহার</th><th>শেষ ইস্যু</th><th>শর্ট লেভেল (অটো)</th><th>লিড টাইম (দিন)</th><th>নিজের লেভেল (ঐচ্ছিক)</th><th>নিজে ব্যবহার দিন</th><th>ডিমান্ড (নিজে দিন)</th><th>অর্ডার করুন</th></tr></thead>
+    <tbody id="tb"></tbody>
+  </table></div>
+  <p class="help" id="foot"></p>
+  <button id="more" class="hide">আরও দেখান</button>
+  <p class="help">দ্রষ্টব্য: দৈনিক ব্যবহার আসে সামারির Qty Delivered থেকে (Need-By তারিখ ধরে); সামারি না থাকলে স্টক কমে গেলে তবেই ব্যবহার ধরা হয়। সামারির বাকি অর্ডার শুধু স্ট্যাটাসে ধরা হয় (বাকি ডিমান্ড &gt; স্টক হলে “এখনই অর্ডার”); “ডিমান্ড (নিজে দিন)” লিখলে সেটা অর্ডারের পরিমাণেও ধরা হয়। লিড টাইম, ন্যূনতম স্টক, নিজে ব্যবহার ও ডিমান্ড — এই ব্রাউজারেই সেভ থাকে।</p>
+</section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let snaps=LS.get('sat_snaps',{}),meta=LS.get('sat_meta',{}),setg=LS.get('sat_set',{}),reqs=LS.get('sat_reqs',{});
+let cfg=Object.assign({lead:7,safety:3,cover:15,win:30,pct:30,non:25,miss:1,pend:1},LS.get('sat_cfg',{}));
+if((cfg.v||0)<2){if(cfg.non===30)cfg.non=25;cfg.v=2}
+let raw=null,rawR=null,mapSelR={},mapSel={},view={f:'all',q:'',fl:'',lim:300},items=[],ctx={cur:{},used:[],miss:new Set()},list=[],resetArm=false;
+const ST={out:['শেষ',0],crit:['এখনই অর্ডার',1],warn:['সতর্ক',2],nod:['তথ্য নেই',3],ok:['ঠিক আছে',4],non:['নন-মুভিং',5]};
+const persist=()=>{LS.set('sat_snaps',snaps);LS.set('sat_meta',meta);LS.set('sat_set',setg);LS.set('sat_cfg',cfg);LS.set('sat_reqs',reqs)};
+const fmt=n=>n==null?'—':(Math.round(n*100)/100).toLocaleString('en-US');
+const msg=(t,e)=>{const m=$('#msg');m.textContent=t;m.className=e?'e':''};
+function num(v){if(typeof v==='number')return v;const s=String(v).replace(/,/g,'').trim();return s!==''&&!isNaN(s)?+s:null}
+/* কোডের শুরুতে Oracle-এর ' চিহ্ন থাকে (যেমন '0529975236) — সেটা বাদ; মেলানোর সময় শুধু অক্ষর/সংখ্যা, শুরুর ০ বাদ */
+const cc=c=>String(c==null?'':c).trim().replace(/^['"`‘’]+/,'').trim();
+const nk=c=>String(c).toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^0+/,'');
+(function migrate(){
+  let ch=false;
+  for(const d in snaps){const o=snaps[d],n={};for(const k in o){const c=cc(k);if(c!==k)ch=true;n[c]=(n[c]||0)+o[k]}snaps[d]=n}
+  for(const M of [meta,setg])for(const k of Object.keys(M)){const c=cc(k);if(c!==k){M[c]=Object.assign({},M[c]||{},M[k]);delete M[k];ch=true}}
+  for(const k in reqs){const c=cc(reqs[k][0]);if(c!==reqs[k][0]){reqs[k][0]=c;ch=true}}
+  if(ch)persist();
+})();
+
+/* ---------- file reading ---------- */
+function loadFile(f,R){
+  if(!f)return;
+  f.arrayBuffer().then(buf=>{
+    try{
+      const wb=XLSX.read(buf,{type:'array'});
+      let best=null;
+      wb.SheetNames.forEach(n=>{const a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});if(!best||a.length>best.length)best=a});
+      if(!best||best.length<2){msg('ফাইলে কোনো ডেটা পাওয়া যায়নি',1);return}
+      if(R){
+        rawR=parse(best);mapSelR=autoMapR(rawR.headers);buildMapR();
+        if(mapSelR.code<0||mapSelR.del<0||(mapSelR.ir<0&&mapSelR.order<0)){$('#mapboxR').open=true;msg('কোড, Delivery Qty আর IR/Order নং কলাম নিজে বেছে নিন',1)}else{$('#mapboxR').open=false;ingestReq()}
+        return;
+      }
+      raw=parse(best);mapSel=autoMap(raw.headers);buildMap();
+      const dm=raw.title.match(/balance\s*up\s*to\W*(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/i);
+      if(dm){const iso=mkISO(+dm[3],+dm[2],+dm[1]);if(iso)$('#dt').value=iso}
+      if(mapSel.code<0||mapSel.qty<0){$('#mapbox').open=true;msg('কোড/পরিমাণ কলাম নিজে বেছে নিন',1)}else ingest();
+    }catch(err){msg('ফাইল পড়া যায়নি: '+err.message,1)}
+  });
+}
+function parse(a){
+  let hi=-1;
+  for(let i=0;i<Math.min(a.length,30);i++){const t=a[i].filter(c=>typeof c==='string'&&c.trim());if(t.length>=3&&t.some(c=>/code|item|desc|qty|quant|on.?hand/i.test(c))){hi=i;break}}
+  if(hi<0){let b=-1;for(let i=0;i<Math.min(a.length,30);i++){const n=a[i].filter(c=>typeof c==='string'&&c.trim()).length;if(n>b){b=n;hi=i}}}
+  const w=Math.max(...a.slice(hi,hi+50).map(r=>r.length));
+  const headers=[];for(let j=0;j<w;j++){const h=String(a[hi][j]??'').trim();headers.push(h||'Column '+(j+1))}
+  const title=a.slice(0,hi).map(r=>r.filter(c=>typeof c==='string').join(' ')).join(' ');
+  return{headers,rows:a.slice(hi+1).filter(r=>r.some(c=>c!=='')),title};
+}
+const find=(hs,res)=>{for(const re of res){const i=hs.findIndex(h=>re.test(h));if(i>=0)return i}return -1};
+const autoMap=hs=>({code:find(hs,[/item.*code|item.*no|part.*no|^code$|sku/i,/code/i,/^item$/i]),name:find(hs,[/item.*desc|description/i,/desc|name/i]),uom:find(hs,[/uom|unit/i]),qty:find(hs,[/on.?hand/i,/qty|quantity/i,/balance|stock/i])});
+function buildMap(){
+  const L={code:'আইটেম কোড',name:'আইটেমের নাম',uom:'ইউনিট (UOM)',qty:'স্টক পরিমাণ'};
+  $('#maps').innerHTML=Object.keys(L).map(k=>`<label>${L[k]}<select data-m="${k}"><option value="-1">— নেই —</option>${raw.headers.map((h,i)=>`<option value="${i}"${mapSel[k]===i?' selected':''}>${esc(h)}</option>`).join('')}</select></label>`).join('');
+  $('#mapbox').classList.remove('hide');
+}
+const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+const yr=s=>{s=+s;return s<100?2000+s:s};
+const mkISO=(Y,M,D)=>M>=1&&M<=12&&D>=1&&D<=31?Y+'-'+String(M).padStart(2,'0')+'-'+String(D).padStart(2,'0'):null;
+function toISO(v){
+  if(typeof v==='number'&&v>20000&&v<80000)return new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10);
+  const s=String(v).trim();let m;
+  if(m=s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/))return mkISO(+m[1],+m[2],+m[3]);
+  if(m=s.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3})[A-Za-z]*[-\/ ,]*(\d{2,4})/))return mkISO(yr(m[3]),MON[m[2].toLowerCase()],+m[1]);
+  if(m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/))return mkISO(yr(m[3]),+m[2],+m[1]);
+  return null;
+}
+/* সামারির কলাম অটো-ম্যাপ: Order Number, Number, Item, Description, UOM, Quantity, Qty Delivered, Requester, Need-By, Location */
+const autoMapR=hs=>({
+  ir:find(hs,[/\bir\b|^ir[_\s.-]?(no|num)|requisition.*(no|num)|req\w*\s*(no|num)/i,/^(no|num|number)\.?$/i]),
+  order:find(hs,[/order/i]),
+  code:find(hs,[/item.*code|item.*no|part.*no|^code$|sku/i,/^item$/i,/code/i]),
+  name:find(hs,[/item.*(desc|name)|description/i,/desc|name/i]),
+  req:find(hs,[/req\w*\s*qty|req\w*.*quant/i,/^(order\w*\s*)?(qty|quantity)$/i]),
+  del:find(hs,[/deliver\w*\s*qty|issue\w*\s*qty|qty\s*(deliver|issue)\w*/i,/deliver|issued/i]),
+  need:find(hs,[/need.*date|required.*date|need.?by/i,/need/i,/date/i]),
+  unit:find(hs,[/unit|uom/i]),
+  user:find(hs,[/requester|user/i]),
+  floor:find(hs,[/floor/i,/location|\bloc\b/i,/dept|department|section/i])
+});
+function buildMapR(){
+  const L={ir:'IR / Number',order:'অর্ডার নং',code:'আইটেম কোড',name:'আইটেমের নাম',req:'Request Qty (Quantity)',del:'Delivery Qty (Qty Delivered)',need:'Need Date (Need-By)',unit:'ইউনিট',floor:'ফ্লোর / Location'};
+  $('#mapsR').innerHTML=Object.keys(L).map(k=>`<label>${L[k]}<select data-m="${k}"><option value="-1">— নেই —</option>${rawR.headers.map((h,i)=>`<option value="${i}"${mapSelR[k]===i?' selected':''}>${esc(h)}</option>`).join('')}</select></label>`).join('');
+  $('#mapboxR').classList.remove('hide');showPrev();
+}
+function showPrev(){
+  const m=mapSelR;
+  const g=(r,i)=>i>=0?String(r[i]??''):'(কলাম নেই)';
+  const rows=rawR.rows.slice(0,3).map(r=>'কোড: '+g(r,m.code)+' | Delivery: '+g(r,m.del)+' | Need Date: '+g(r,m.need)+' → '+(m.need>=0?(toISO(r[m.need])||'পড়া যায়নি'):'—')+' | ফ্লোর: '+g(r,m.floor));
+  $('#prev').innerHTML='ফাইলে মোট '+rawR.rows.length+' সারি পাওয়া গেছে। প্রথম ৩ সারি যেভাবে পড়া হলো:<br>'+rows.map(esc).join('<br>');
+}
+function ingestReq(){
+  const m=mapSelR;
+  if(m.code<0||m.del<0||(m.ir<0&&m.order<0)){msg('কোড, Delivery Qty আর IR/Order নং কলাম বেছে নিন (ডুপ্লিকেট এড়াতে লাগে)',1);return}
+  const batch={};let bad=0;
+  for(const r of rawR.rows){
+    const code=cc(r[m.code]);if(!code)continue;
+    const del=num(r[m.del]),rq=m.req>=0?num(r[m.req]):null;
+    if(del===null&&rq===null)continue;
+    const d=m.need>=0?toISO(r[m.need]):null;if(m.need>=0&&!d)bad++;
+    const ir=m.ir>=0?String(r[m.ir]).trim():'',od=m.order>=0?String(r[m.order]).trim():'',fl=m.floor>=0?String(r[m.floor]).trim():'';
+    const k=[ir,od,code,d||'',fl].join('|'),dv=del||0,rv=rq??del??0;
+    if(batch[k]){batch[k][1]+=dv;batch[k][2]+=rv}else batch[k]=[code,dv,rv,d||'',fl,ir];
+    const mt=meta[code]||(meta[code]={});
+    if(m.name>=0&&r[m.name]!=='')mt.n=String(r[m.name]).trim();
+    if(m.unit>=0&&r[m.unit]!=='')mt.u=String(r[m.unit]).trim();
+  }
+  const n=Object.keys(batch).length;if(!n){msg('কোনো রিকুইজিশন লাইন পাওয়া যায়নি — কলাম ঠিক আছে কি দেখুন',1);return}
+  Object.assign(reqs,batch);
+  let mx='';Object.values(reqs).forEach(r=>{if(r[3]>mx)mx=r[3]});
+  if(mx){const cut=new Date(new Date(mx)-120*864e5).toISOString().slice(0,10);for(const k in reqs)if(reqs[k][3]&&reqs[k][3]<cut)delete reqs[k]}
+  persist();
+  const ds=Object.keys(snaps).sort(),cur=ds.length?snaps[ds[ds.length-1]]:null,codes=new Set(Object.values(batch).map(x=>x[0]));
+  let hit=0;const ns=cur?new Set(Object.keys(cur).map(nk)):null;if(cur)codes.forEach(c=>{if(ns.has(nk(c)))hit++});
+  recalc();
+  msg('✓ '+n+' লাইন সেভ হয়েছে · '+codes.size+'টি আইটেম'+(cur?', এর মধ্যে '+hit+'টি স্টক রিপোর্টের সাথে মিলেছে'+(hit===0?' ⚠ কোড মিলছে না — সামারির কোড: '+[...codes].slice(0,3).join(', ')+' | স্টকের কোড: '+Object.keys(cur).slice(0,3).join(', '):''):' — এবার ১) On Hand স্টক রিপোর্ট আপলোড করুন')+(bad?' · '+bad+'টির Need Date পড়া যায়নি':''));
+}
+function aggReq(end){
+  const ks=Object.values(reqs);if(!ks.length)return null;
+  let mn='9999';ks.forEach(r=>{if(r[3]&&r[3]<mn)mn=r[3]});
+  const e=new Date(end),lo=new Date(e-cfg.win*864e5);
+  const cov=mn==='9999'?0:Math.round((e-new Date(mn))/864e5)+1;
+  const span=mn==='9999'?cfg.win:Math.max(1,Math.min(cfg.win,cov));
+  const by={},fi={};
+  for(const r of ks){
+    const K=nk(r[0]),d=r[3]?new Date(r[3]):e;
+    const o=by[K]||(by[K]={code:r[0],del:0,pend:0,fl:{}});
+    if(d<=e&&r[1]>0&&(!o.last||(r[3]||end)>o.last))o.last=r[3]||end;
+    if(d<lo)continue;
+    if(d<=e&&r[1]>0){o.del+=r[1];const f=r[4]||'—';o.fl[f]=(o.fl[f]||0)+r[1];(fi[f]||(fi[f]=new Set())).add(K)}
+    if(r[2]>r[1])o.pend+=r[2]-r[1];
+  }
+  const floors={};for(const f in fi)floors[f]=fi[f].size;
+  return{by,span,cov,floors};
+}
+function ingest(){
+  const m=mapSel;if(m.code<0||m.qty<0){msg('কোড ও পরিমাণ কলাম বেছে নিন',1);return}
+  const snap={};
+  for(const r of raw.rows){
+    const code=cc(r[m.code]);if(!code)continue;
+    const q=num(r[m.qty]);if(q===null)continue;
+    snap[code]=(snap[code]||0)+q;
+    const mt=meta[code]||(meta[code]={});
+    if(m.name>=0&&r[m.name]!=='')mt.n=String(r[m.name]).trim();
+    if(m.uom>=0&&r[m.uom]!=='')mt.u=String(r[m.uom]).trim();
+  }
+  const n=Object.keys(snap).length;if(!n){msg('কোনো আইটেম পাওয়া যায়নি — কলাম ঠিক আছে কি দেখুন',1);return}
+  snaps[$('#dt').value]=snap;
+  const ds=Object.keys(snaps).sort();while(ds.length>40)delete snaps[ds.shift()];
+  persist();recalc();
+  msg('✓ '+n+'টি আইটেম সেভ হয়েছে ('+$('#dt').value+')');
+}
+
+/* ---------- calculation ---------- */
+function calcItem(code){
+  const {cur,used}=ctx,q=cur[code],s=setg[code]||{};
+  let drop=0,span=0;
+  for(let i=1;i<used.length;i++){
+    const a=snaps[used[i-1]][code],b=snaps[used[i]][code];
+    const d=(new Date(used[i])-new Date(used[i-1]))/864e5;
+    if(a==null||b==null||d<=0)continue;
+    span+=d;if(b<a)drop+=a-b;
+  }
+  let rate=span>0?drop/span:0,src='auto';
+  const rq=ctx.rq&&ctx.rq.by[nk(code)];
+  if(s.use>0){rate=s.use;src='manual'}
+  else if(rq){rate=rq.del/ctx.rq.span;src='req'}   /* দৈনিক ব্যবহার = Delivery Qty ÷ দিন */
+  const hist=span>0||s.use>0||!!rq;
+  const pendAuto=rq&&cfg.pend?rq.pend:0;
+  const man=s.dem!=null;                              /* নিজের দেওয়া ডিমান্ড */
+  const pend=man?s.dem:pendAuto;
+  const fls=rq?Object.entries(rq.fl).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]):[];
+  const lead=s.lead>0?s.lead:cfg.lead;
+  const days=rate>0?q/rate:null;
+  let st;
+  if(q<=0)st='out';
+  else if(days!=null)st=days<=lead?'crit':days<=lead+cfg.safety?'warn':'ok';
+  else st=hist?'ok':'nod';
+  if(q>0&&((s.min>0&&q<=s.min)||pend>q)&&st!=='out')st='crit';
+  let mx=q;for(const d in snaps){const v=snaps[d][code];if(v>mx)mx=v}
+  let lvl,lt;
+  if(s.min>0){lvl=s.min;lt='manual'}else if(rate>0){lvl=Math.ceil(rate*(lead+cfg.safety));lt='auto'}else{lvl=Math.ceil(mx*cfg.pct/100);lt='est'}
+  if(lt==='est'&&lvl>0&&q>0&&q<=lvl&&st==='nod')st='warn';
+  const last=rq&&rq.last||'';
+  const cut=new Date(new Date(ctx.end)-cfg.non*864e5).toISOString().slice(0,10);
+  const non=!!ctx.rq&&ctx.rq.hit>0&&ctx.rq.cov>=cfg.non&&!(s.use>0)&&!(s.min>0)&&!(pend>0)&&!(last>=cut);
+  if(non)st='non';
+  let ord=null;
+  if(!non){
+    const dem=man&&s.dem>0?s.dem:0,H=lead+cfg.safety+cfg.cover;
+    if(rate>0||dem>0)ord=Math.max(0,Math.ceil(Math.max(rate*H,dem)-q));
+    else if(lvl>0&&q<=lvl)ord=Math.max(0,Math.ceil(lvl*2-q));
+  }
+  const mt=meta[code]||{};
+  return{code,name:mt.n||'',uom:mt.u||'',q,rate,src,hist,pend,man,dem:man?s.dem:'',fls,flm:rq?rq.fl:{},flTxt:fls.map(x=>x[0]).join(' '),miss:ctx.miss.has(code),lvl,lt,last,days,lead,min:s.min||'',use:s.use||'',st,ord};
+}
+function recalc(){
+  const ds=Object.keys(snaps).sort();
+  if(!ds.length){$('#app').classList.add('hide');$('#empty').classList.remove('hide');return}
+  const latest=ds[ds.length-1],lt=new Date(latest);
+  ctx={cur:Object.assign({},snaps[latest]),used:ds.filter(d=>(lt-new Date(d))/864e5<=cfg.win),rq:aggReq(latest),end:latest,miss:new Set()};
+  if(ctx.rq){
+    const ns=new Set(Object.keys(ctx.cur).map(nk)),by=ctx.rq.by;
+    ctx.rq.hit=Object.keys(by).filter(c=>ns.has(c)).length;
+    /* স্টক রিপোর্টে নেই কিন্তু ডেলিভারি/বাকি আছে → স্টক ০ */
+    if(cfg.miss)for(const K in by){const o=by[K];if(!ns.has(K)&&(o.del>0||o.pend>0)){ctx.cur[o.code]=0;ctx.miss.add(o.code)}}
+  }
+  items=Object.keys(ctx.cur).map(calcItem);
+  $('#empty').classList.add('hide');$('#app').classList.remove('hide');
+  $('#foot').textContent='সর্বশেষ রিপোর্ট: '+latest+' · জমা আছে '+ds.length+'টি দিনের স্টক'+(ctx.rq?' · রিকুইজিশন: '+Object.keys(reqs).length+' লাইন (গত '+ctx.rq.span+' দিনের ডেলিভারি থেকে ব্যবহার)':'')+(ctx.miss.size?' · স্টক রিপোর্টে নেই (০ ধরা): '+ctx.miss.size+'টি':'')+(!ctx.rq?' · ⚠ রিকুইজিশন সামারি এখনো জমা নেই (বক্স ২-এ দিন)':'')+(ctx.rq&&ctx.rq.hit===0?' · ⚠ সামারির কোড স্টকের সাথে মিলছে না':'')+(ctx.rq&&ctx.rq.hit>0&&ctx.rq.cov<cfg.non?' · ⚠ সামারি মাত্র '+ctx.rq.cov+' দিনের, নন-মুভিং চিনতে কমপক্ষে '+cfg.non+' দিনের সামারি দিন':'')+(ctx.used.length<2&&!ctx.rq?' · ব্যবহার বের করতে কমপক্ষে ২ দিনের রিপোর্ট লাগবে — আপাতত “ন্যূনতম স্টক” বা “নিজে ব্যবহার” দিন':'');
+  fillFloors();
+  render();
+}
+function fillFloors(){
+  const fl=ctx.rq?Object.entries(ctx.rq.floors).sort((a,b)=>a[0].localeCompare(b[0])):[];
+  if(view.fl&&!fl.some(x=>x[0]===view.fl))view.fl='';
+  $('#fsel').innerHTML='<option value="">সব ফ্লোর / লোকেশন</option>'+fl.map(([l,n])=>`<option value="${esc(l)}"${view.fl===l?' selected':''}>${esc(l)} (${n}টি আইটেম)</option>`).join('');
+}
+
+/* ---------- render ---------- */
+const lvHTML=i=>`${fmt(i.lvl)} <span class="u">${esc(i.uom)} · ${({auto:'অটো',est:'আনুমানিক',manual:'নিজের'})[i.lt]}</span>`;
+const badge=st=>`<span class="b ${st}">${ST[st][0]}</span>`;
+const daysTxt=i=>i.days==null?(i.hist?'∞':'—'):(i.days<10?i.days.toFixed(1):Math.round(i.days));
+const usTxt=i=>i.rate>0?fmt(i.rate)+(i.src==='manual'?' ✎':'')+' <span class="u">'+esc(i.uom)+'/দিন</span>':'—';
+const pdTxt=i=>i.pend>0?fmt(i.pend)+(i.man?' ✎':''):(i.man?'0 ✎':'—');
+function flHTML(i){
+  if(!i.fls.length)return '<span class="u">—</span>';
+  const top=i.fls.slice(0,5).map(([l,v])=>`<span class="chip${view.fl===l?' on':''}">${esc(l)} <b>${fmt(v)}</b></span>`).join('');
+  const rest=i.fls.slice(5);
+  return top+(rest.length?`<span class="u" title="${esc(rest.map(x=>x[0]+' '+fmt(x[1])).join(' | '))}">+${rest.length}টি আরও</span>`:'');
+}
+function cards(){
+  const c={all:items.length,short:0,out:0,crit:0,warn:0,nod:0,ok:0,non:0};items.forEach(i=>c[i.st]++);c.short=c.out+c.crit+c.warn;
+  const lab={all:'সব আইটেম',short:'শর্ট লিস্ট (শেষ+অর্ডার+সতর্ক)',out:'স্টক শেষ',crit:'এখনই অর্ডার',warn:'সতর্ক',nod:'তথ্য নেই',ok:'ঠিক আছে',non:'নন-মুভিং (দরকার নেই)'};
+  $('#cards').innerHTML=Object.keys(lab).map(k=>`<button class="kpi k-${k}${view.f===k?' sel':''}" data-f="${k}"><span>${lab[k]}</span><strong>${c[k]}</strong></button>`).join('');
+}
+function rowHTML(i){
+  return `<tr data-c="${esc(i.code)}"><td class="st">${badge(i.st)}</td><td>${esc(i.code)}</td><td>${esc(i.name)}${i.miss?'<span class="tag">স্টক রিপোর্টে নেই — স্টক ০ ধরা হয়েছে</span>':''}</td>
+<td class="n">${fmt(i.q)} <span class="u">${esc(i.uom)}</span></td><td class="n us">${usTxt(i)}</td><td class="n dl">${daysTxt(i)}</td><td class="n pd">${pdTxt(i)}</td><td class="fl">${flHTML(i)}</td><td class="u">${i.last||'—'}</td><td class="n lv">${lvHTML(i)}</td>
+<td><input type="number" min="0" step="any" data-k="lead" placeholder="${cfg.lead}" value="${i.lead!==cfg.lead||(setg[i.code]||{}).lead?i.lead:''}"></td>
+<td><input type="number" min="0" step="any" data-k="min" placeholder="${i.lt==='manual'?'':i.lvl}" value="${i.min}"></td><td><input type="number" min="0" step="any" data-k="use" value="${i.use}"></td><td><input type="number" min="0" step="any" data-k="dem" value="${i.dem}"></td>
+<td class="n ord oq">${i.ord==null?'—':i.ord>0?fmt(i.ord):'0'}</td></tr>`;
+}
+function render(){
+  cards();
+  const q=view.q;
+  list=items.filter(i=>(view.f==='all'||i.st===view.f||(view.f==='short'&&i.st!=='ok'&&i.st!=='nod'&&i.st!=='non'))&&(!view.fl||i.flm[view.fl]>0)&&(!q||(i.code+' '+i.name+' '+i.flTxt).toLowerCase().includes(q)));
+  list.sort((a,b)=>ST[a.st][1]-ST[b.st][1]||(a.days??1e9)-(b.days??1e9)||a.q-b.q);
+  $('#tb').innerHTML=list.slice(0,view.lim).map(rowHTML).join('')||'<tr><td colspan="15" class="u">কিছু পাওয়া যায়নি</td></tr>';
+  $('#more').classList.toggle('hide',list.length<=view.lim);
+  $('#more').textContent='আরও দেখান ('+(list.length-view.lim)+'টি বাকি)';
+}
+
+/* ---------- events ---------- */
+$('#tb').addEventListener('change',e=>{
+  const k=e.target.dataset.k;if(!k)return;
+  const tr=e.target.closest('tr'),code=tr.dataset.c,tv=e.target.value.trim(),v=parseFloat(tv);
+  const s=setg[code]=setg[code]||{};
+  if(tv!==''&&v>=0&&(k==='dem'||v>0))s[k]=v;else delete s[k];
+  persist();
+  const it=calcItem(code),ix=items.findIndex(x=>x.code===code);items[ix]=it;
+  const li=list.findIndex(x=>x.code===code);if(li>=0)list[li]=it;
+  tr.querySelector('.st').innerHTML=badge(it.st);
+  tr.querySelector('.us').innerHTML=usTxt(it);
+  tr.querySelector('.dl').textContent=daysTxt(it);
+  tr.querySelector('.pd').textContent=pdTxt(it);
+  tr.querySelector('.lv').innerHTML=lvHTML(it);
+  tr.querySelector('.oq').textContent=it.ord==null?'—':it.ord>0?fmt(it.ord):'0';
+  cards();
+});
+$('#cards').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;view.f=b.dataset.f;view.lim=300;render()});
+$('#q').addEventListener('input',e=>{view.q=e.target.value.trim().toLowerCase();view.lim=300;render()});
+$('#fsel').addEventListener('change',e=>{view.fl=e.target.value;view.lim=300;render()});
+$('#more').addEventListener('click',()=>{view.lim+=300;render()});
+$('#maps').addEventListener('change',e=>{const k=e.target.dataset.m;if(!k)return;mapSel[k]=+e.target.value;ingest()});
+$('#file').addEventListener('change',e=>{loadFile(e.target.files[0]);e.target.value=''});
+$('#fileR').addEventListener('change',e=>{loadFile(e.target.files[0],1);e.target.value=''});
+$('#mapsR').addEventListener('change',e=>{const k=e.target.dataset.m;if(!k)return;mapSelR[k]=+e.target.value;showPrev();ingestReq()});
+const dpR=$('#dropR');
+dpR.addEventListener('click',()=>$('#fileR').click());
+['dragover','dragenter'].forEach(ev=>dpR.addEventListener(ev,e=>{e.preventDefault();dpR.classList.add('on')}));
+['dragleave','drop'].forEach(ev=>dpR.addEventListener(ev,e=>{e.preventDefault();dpR.classList.remove('on')}));
+dpR.addEventListener('drop',e=>loadFile(e.dataTransfer.files[0],1));
+const dp=$('#drop');
+dp.addEventListener('click',()=>$('#file').click());
+['dragover','dragenter'].forEach(ev=>dp.addEventListener(ev,e=>{e.preventDefault();dp.classList.add('on')}));
+['dragleave','drop'].forEach(ev=>dp.addEventListener(ev,e=>{e.preventDefault();dp.classList.remove('on')}));
+dp.addEventListener('drop',e=>loadFile(e.dataTransfer.files[0]));
+[['lead','c-lead'],['safety','c-safety'],['cover','c-cover'],['win','c-win'],['pct','c-pct'],['non','c-non']].forEach(([k,id])=>{
+  const el=$('#'+id);el.value=cfg[k];
+  el.addEventListener('change',()=>{const v=parseFloat(el.value);if(v>=0&&(k==='safety'||v>0))cfg[k]=v;else el.value=cfg[k];persist();recalc()});
+});
+[['miss','c-miss'],['pend','c-pend']].forEach(([k,id])=>{
+  const el=$('#'+id);el.checked=!!cfg[k];
+  el.addEventListener('change',()=>{cfg[k]=el.checked?1:0;persist();recalc()});
+});
+$('#reset').addEventListener('click',e=>{
+  if(!resetArm){resetArm=true;e.target.textContent='নিশ্চিত? আবার ক্লিক করুন';setTimeout(()=>{resetArm=false;e.target.textContent='সব ডেটা মুছুন'},4000);return}
+  snaps={};meta={};setg={};reqs={};view.fl='';persist();resetArm=false;e.target.textContent='সব ডেটা মুছুন';recalc();msg('সব ডেটা মুছে ফেলা হয়েছে');
+});
+$('#exp').addEventListener('click',async()=>{
+  if(!list.length){msg('এক্সপোর্ট করার মতো কিছু নেই',1);return}
+  const rows=list.map(i=>({'অবস্থা':ST[i.st][0],'কোড':i.code,'আইটেম':i.name,'ইউনিট':i.uom,'স্টক':i.q,'দৈনিক ব্যবহার':i.rate>0?+i.rate.toFixed(2):'','কত দিন চলবে':i.days==null?'':+i.days.toFixed(1),'বাকি ডিমান্ড':i.pend||'','ফ্লোর / লোকেশন অনুযায়ী ব্যবহার':i.fls.map(x=>x[0]+' '+fmt(x[1])).join(' | '),'শেষ ইস্যু':i.last||'','শর্ট লেভেল':i.lvl,'লিড টাইম (দিন)':i.lead,'ন্যূনতম স্টক':i.min,'অর্ডার করুন':i.ord==null?'':i.ord}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Stock Alert');
+  if(ctx.rq){
+    const fr=[];list.forEach(i=>i.fls.forEach(([l,v])=>fr.push({'ফ্লোর / লোকেশন':l,'কোড':i.code,'আইটেম':i.name,'ইউনিট':i.uom,['ডেলিভারি (গত '+ctx.rq.span+' দিন)']:v,'দৈনিক গড়':+(v/ctx.rq.span).toFixed(2)})));
+    fr.sort((a,b)=>a['ফ্লোর / লোকেশন'].localeCompare(b['ফ্লোর / লোকেশন'])||String(a['কোড']).localeCompare(String(b['কোড'])));
+    if(fr.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(fr),'Floor-wise');
+  }
+  const name='stock-alert-'+$('#dt').value+'.xlsx';
+  try{
+    const dl=window.claude?await claude.use('downloads'):null;
+    if(dl){await dl.save({filename:name,data:XLSX.write(wb,{bookType:'xlsx',type:'array'})});msg('✓ এক্সেল ফাইল সেভ হয়েছে')}
+    else{XLSX.writeFile(wb,name);msg('✓ এক্সেল ফাইল নামানো হয়েছে')}
+  }catch(err){if(!err||err.code!=='declined')msg('সেভ করা যায়নি',1)}
+});
+
+/* ---------- start ---------- */
+(function(){const t=new Date();t.setMinutes(t.getMinutes()-t.getTimezoneOffset());$('#dt').value=t.toISOString().slice(0,10);recalc()})();
+</script>
+</body>
+</html>
